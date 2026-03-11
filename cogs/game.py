@@ -6,7 +6,7 @@ from discord import app_commands
 from utils.db import get_linked_account
 from utils.settings_store import get_language
 from utils.language_database import languages
-from utils.val_api import authorized_client
+from utils.val_api import authorized_client, henrik_player_endpoint
 
 class Game(commands.Cog):
     def __init__(self, bot):
@@ -31,7 +31,7 @@ class Game(commands.Cog):
             await interaction.followup.send(languages["errors"]["invalid_tagline"][lang], ephemeral=True)
             return
 
-        url = f"https://api.henrikdev.xyz/valorant/v1/lifetime/matches/eu/{name}/{tag}?mode=competitive"
+        url = henrik_player_endpoint("lifetime/matches", "eu", name, tag, query="mode=competitive")
         async with authorized_client() as session:
             res = await session.get(url)
             if res.status_code == 429:
@@ -40,7 +40,7 @@ class Game(commands.Cog):
             if res.status_code != 200:
                 await interaction.followup.send(languages["errors"]["api_down"][lang], ephemeral=True)
                 return
-            data = (await res.json()).get("data")
+            data = res.json().get("data")
             if not data:
                 await interaction.followup.send(languages["game"]["no_data"][lang], ephemeral=True)
                 return

@@ -6,7 +6,7 @@ from discord import app_commands
 from utils.db import get_linked_account
 from utils.settings_store import get_language
 from utils.language_database import languages
-from utils.val_api import authorized_client
+from utils.val_api import authorized_client, henrik_player_endpoint
 import json
 
 class Stats(commands.Cog):
@@ -32,7 +32,7 @@ class Stats(commands.Cog):
             await interaction.followup.send(languages["errors"]["invalid_tagline"][lang], ephemeral=True)
             return
 
-        url = f"https://api.henrikdev.xyz/valorant/v1/mmr/eu/{name}/{tag}"
+        url = henrik_player_endpoint("mmr", "eu", name, tag)
         async with authorized_client() as session:
             res = await session.get(url)
             if res.status_code == 429:
@@ -42,7 +42,7 @@ class Stats(commands.Cog):
                 await interaction.followup.send(languages["errors"]["api_down"][lang], ephemeral=True)
                 return
 
-            data = (await res.json()).get("data")
+            data = res.json().get("data")
             if not data:
                 await interaction.followup.send(languages["errors"]["no_account"][lang], ephemeral=True)
                 return
