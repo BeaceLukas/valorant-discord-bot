@@ -1,16 +1,24 @@
 import httpx
 import os
 from dotenv import load_dotenv
+from urllib.parse import quote
 
 load_dotenv()
 
 BASE_URL = "https://valorant-api.com/v1"
+HENRIK_BASE_URL = "https://api.henrikdev.xyz/valorant/v1"
 HENRIK_API_KEY = os.getenv("HENRIK_API_KEY")
 
 HEADERS = {"Authorization": HENRIK_API_KEY} if HENRIK_API_KEY else {}
 
 def authorized_client():
     return httpx.AsyncClient(headers=HEADERS)
+
+def henrik_player_endpoint(route: str, region: str, name: str, tag: str, query: str = "") -> str:
+    encoded_name = quote(name, safe="")
+    encoded_tag = quote(tag, safe="")
+    base = f"{HENRIK_BASE_URL}/{route}/{region}/{encoded_name}/{encoded_tag}"
+    return f"{base}?{query}" if query else base
 
 async def get_weapon_data():
     try:

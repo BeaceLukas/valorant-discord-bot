@@ -13,7 +13,7 @@ from utils.db import link_account, get_linked_account, load_db, save_db
 from utils.verify_store import store_code, check_code, verify_cache
 from utils.settings_store import get_language
 from utils.language_database import languages
-from utils.val_api import authorized_client
+from utils.val_api import authorized_client, henrik_player_endpoint
 
 CACHE_PATH = "data/mmr_cache.json"
 os.makedirs("data", exist_ok=True)
@@ -51,11 +51,11 @@ class Link(commands.GroupCog, name="link"):
 
                 # MMR-Cache Update starten
                 name, tag = tagline.split("#")
-                url = f"https://api.henrikdev.xyz/valorant/v1/mmr/eu/{name}/{tag}"
+                url = henrik_player_endpoint("mmr", "eu", name, tag)
                 async with authorized_client() as session:
                     res = await session.get(url)
                     if res.status_code == 200:
-                        data = await res.json()
+                        data = res.json()
                         mmr = data.get("data", {})
                         cache = load_cache()
                         cache[str(user_id)] = {

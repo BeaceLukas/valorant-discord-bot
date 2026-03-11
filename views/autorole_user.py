@@ -1,6 +1,6 @@
 import discord
 from utils.db import get_linked_account, load_db, save_db
-from utils.val_api import authorized_client
+from utils.val_api import authorized_client, henrik_player_endpoint
 from utils.autorole_roles import load_roles
 from utils.mmr_cache import load_cache, save_cache
 from utils.settings_store import get_language
@@ -25,13 +25,13 @@ class AutoRoleUserView(discord.ui.View):
             return
 
         name, tag = linked["riot_tagline"].split("#")
-        url = f"https://api.henrikdev.xyz/valorant/v1/mmr/eu/{name}/{tag}"
+        url = henrik_player_endpoint("mmr", "eu", name, tag)
         async with authorized_client() as session:
-            async with session.get(url) as res:
-                if res.status != 200:
-                    await interaction.response.send_message(languages["errors"]["api_down"][lang], ephemeral=True)
-                    return
-                data = await res.json()
+            res = await session.get(url)
+            if res.status_code != 200:
+                await interaction.response.send_message(languages["errors"]["api_down"][lang], ephemeral=True)
+                return
+            data = res.json()
 
         current_rank = data.get("data", {}).get("currenttierpatched")
         if not current_rank:
